@@ -1,2 +1,3 @@
-@Autores: Borja Gete y Fernán Ramos
-Prácticas de la asignatura de Nuevas Tecnologías y Empresa de 4º curso del grado de Ingeniería Informática de la Universidad de Burgos.
+@Autores: Borja Gete y FernÃ¡n Ramos
+PrÃ¡cticas de la asignatura de Nuevas TecnologÃ­as y Empresa de 4Âº curso
+del grado de IngenierÃ­a InformÃ¡tica de la Universidad de Burgos.
