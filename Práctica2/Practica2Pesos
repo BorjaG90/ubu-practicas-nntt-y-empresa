@@ -1,0 +1,229 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Práctica 2\n",
+    "@Author: Borja Gete & Fernán Ramos @Versión 1.0.1 @Date 02/03/2016"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Importación de librerias"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "import networkx as nx # librería de análisis de redes\n",
+    "import numpy as np # librería de computación numérica\n",
+    "import matplotlib.pyplot as plot # librería de Visualización"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Función de preparación del Grafo"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "def preparacion(grafo):\n",
+    "    #Colocamos los pesos en una unica matriz triangular\n",
+    "    #ya que trabajamos con grafos no dirigidos\n",
+    "    lista=[]\n",
+    "    for i in grafo:\n",
+    "        for j in grafo[i]:\n",
+    "            if j<i:\n",
+    "                dato=grafo[i][j]['weight']\n",
+    "                lista.append((j,i,dato))\n",
+    "    grafo.add_weighted_edges_from(lista)\n",
+    "    return grafo"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Definición de función de cálculo de Distancia Mínima"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "def minimal_distance(grafo,origen):\n",
+    "    #preparacion\n",
+    "    adelante=True #Si nos movemos adelante en el historial\n",
+    "    grafo=preparacion(grafo)\n",
+    "    listaMin=[] #Lista de nodos de los que obtener su distancia minima(pendientes)\n",
+    "    diccionario={} #Nodos y su peso desde el origen\n",
+    "    diccionario[origen]='N'\n",
+    "    for nodo in grafo.nodes():\n",
+    "        listaMin.append(nodo) #Rellenamos la lista\n",
+    "    nodo=origen\n",
+    "    listaMin.remove(nodo) #Sacamos el nodo inicial de la lista de pendientes\n",
+    "    listaVistos=[]\n",
+    "    for x in listaMin:\n",
+    "        listaVistos.append(x)\n",
+    "    contadorW = 0\n",
+    "    historial=[]\n",
+    "    while len(listaMin) > 0 and contadorW < 10:\n",
+    "        minimo=-1\n",
+    "        peso=-1\n",
+    "        nodoM=-1\n",
+    "        if adelante==True and nodo != origen:\n",
+    "            historial.append(nodo)\n",
+    "        for analizado in listaVistos:\n",
+    "            #analizado=listaVistos[i]\n",
+    "            if analizado in grafo[nodo]:\n",
+    "                peso=grafo[nodo][analizado]['weight']\n",
+    "                if analizado in diccionario:\n",
+    "                    if diccionario[analizado]>(diccionario[nodo]+peso):\n",
+    "                        diccionario[analizado]=diccionario[nodo]+peso #Si ya existia, actualizamos el peso\n",
+    "                else:\n",
+    "                    if nodo != origen:\n",
+    "                        diccionario[analizado]=diccionario[nodo]+peso #Si no existia se introduce\n",
+    "                    else:\n",
+    "                        diccionario[analizado]=peso #Si no existia se introduce\n",
+    "            if peso > -1:\n",
+    "                if minimo == -1 or peso < minimo:\n",
+    "                    minimo=peso #Obtenemos el nodo de menor peso\n",
+    "                    nodoM=analizado\n",
+    "                    adelante=True\n",
+    "        nodo=nodoM #El siguiente nodo a analizar sera el de distancia minima\n",
+    "        if peso < 0:\n",
+    "            #No hay enlace por lo que volvemos atras un nodo en el historial\n",
+    "            adelante=False\n",
+    "            nodo=historial[0]\n",
+    "            historial.remove(nodo)\n",
+    "        else:\n",
+    "            adelante=True\n",
+    "        if adelante==True:\n",
+    "            listaMin.remove(nodoM)\n",
+    "        listaVistos=listaMin #Obtenemos la lista de nodos de los que obtenemos la distancia al nodo actual\n",
+    "    #-----------------\n",
+    "    return diccionario"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Entrada de Datos"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "def mostrar_Grafo(nodos,inicial,enlaces):\n",
+    "    G=nx.Graph()\n",
+    "    G.add_nodes_from(nodos)\n",
+    "    G.add_weighted_edges_from(enlaces)\n",
+    "    pos = nx.circular_layout(G)\n",
+    "    dic=minimal_distance(G,inicial)\n",
+    "    nx.draw(G,pos,with_labels=False,node_color='b')\n",
+    "    labels = nx.get_edge_attributes(G,'weight')\n",
+    "    nx.draw_networkx_edge_labels(G,pos,edge_labels=labels) #Añadimos los pesos iniciales de los enlaces \n",
+    "    nx.draw_networkx_labels(G,pos,dic,font_color='w')\n",
+    "    plot.show()\n",
+    "    \n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Función de cálculo de distancias mínimas"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "mostrar_Grafo(range(1,11),1,[(1,2,3),(1,5,6),(1,6,7), \\\n",
+    "                            (2,3,4),(2,4,5), \\\n",
+    "                            (3,4,7),(3,9,6), \\\n",
+    "                            (4,5,1),(4,7,4),(4,10,9), \\\n",
+    "                            (5,7,5),(5,2,2), \\\n",
+    "                            (6,5,3), \\\n",
+    "                            (7,6,2),(7,8,2), \\\n",
+    "                            (8,4,3),(8,10,1), \\\n",
+    "                            (9,4,5),(9,10,3)])\n",
+    "\n",
+    "mostrar_Grafo(range(1,6),1,[(1,2,7),(1,3,9),(1,4,14), \\\n",
+    "                            (2,3,10),(2,6,15), \\\n",
+    "                            (3,4,2),(3,6,11), \\\n",
+    "                            (4,5,9), \\\n",
+    "                            (5,6,6)])\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 2",
+   "language": "python",
+   "name": "python2"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.11"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}
